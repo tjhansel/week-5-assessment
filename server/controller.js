@@ -38,11 +38,26 @@ module.exports = {
 
     getCities: (req,res) =>{
         sequelize.query(`
-        SELECT city_id, city.name, rating, country_id, country.name
-        FROM cities, countries
-        JOIN 
+        SELECT city_id, city.name, rating,country.country_id,country.name
+        FROM cities AS city
+        JOIN countries AS country
+        ON city.country_id = country.country_id
+        ORDER BY rating DESC;
+        `).then(
+            (dbRes)=>{
+                res.status(200).send(dbRes[0])
+            }
+        )
+    },
+
+    deleteCity: (req,res)=>{
+        let {id} = req.params
+        sequelize.query(`
+        DELETE FROM cities
+        WHERE city_id = ${id}
         `)
     },
+
     seed: (req, res) => {
         sequelize.query(`
             drop table if exists cities;
@@ -59,6 +74,11 @@ module.exports = {
                 rating INTEGER,
                 country_id INTEGER REFERENCES countries(country_id)
             );
+            
+            INSERT INTO cities (name, rating, country_id)
+            VALUES ('Shelbyville', 3, 45),
+            ('Texas Town', 4, 88),
+            ('Kearns', 5, 185);
 
             insert into countries (name)
             values ('Afghanistan'),
